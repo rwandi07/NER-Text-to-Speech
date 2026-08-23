@@ -12,14 +12,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Create v1.0.0 if missing
+      - name: Create v1.0.1 if missing
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if gh release view v1.0.0 >/dev/null 2>&1; then
-            echo "Release v1.0.0 already exists"
+          if gh release view v1.0.1 >/dev/null 2>&1; then
+            echo "Release v1.0.1 already exists"
           else
-            gh release create v1.0.0 index.html \
-              --title "NER Text to Speech v1.0.0" \
-              --notes-file RELEASE_NOTES.md
+            gh release create v1.0.1 index.html \
+              --title "NER Text to Speech v1.0.1" \
+              --notes "Perbaikan daftar suara. Unduh index.html lalu buka di Chrome, Edge, atau Firefox."
           fi
