@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NER Text to Speech</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --accent: #38bdf8;
+      --accent2: #818cf8;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --danger: #f87171;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(160deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+    .app {
+      width: 100%;
+      max-width: 640px;
+      background: var(--card);
+      border-radius: 20px;
+      padding: 28px;
+      box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+    h1 {
+      font-size: 1.6rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--accent), var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 6px;
+    }
+    .subtitle {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 22px;
+    }
+    label {
+      display: block;
+      font-size: 0.8rem;
+      color: var(--muted);
+      margin-bottom: 6px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+    textarea {
+      width: 100%;
+      min-height: 140px;
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 12px;
+      color: var(--text);
+      padding: 14px;
+      font-size: 1rem;
+      line-height: 1.5;
+      resize: vertical;
+      outline: none;
+      transition: border 0.2s;
+    }
+    textarea:focus { border-color: var(--accent); }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-top: 16px;
+    }
+    select, input[type="range"] {
+      width: 100%;
+    }
+    select {
+      background: #0f172a;
+      border: 1px solid #334155;
+      border-radius: 10px;
+      color: var(--text);
+      padding: 10px 12px;
+      font-size: 0.95rem;
+      outline: none;
+    }
+    .slider-wrap { margin-top: 16px; }
+    .slider-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .val { color: var(--accent); font-weight: 600; font-size: 0.85rem; }
+    input[type="range"] {
+      -webkit-appearance: none;
+      height: 6px;
+      background: #334155;
+      border-radius: 4px;
+      margin-top: 8px;
+    }
+    input[type="range"]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      background: var(--accent);
+      cursor: pointer;
+    }
+    .buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+    button {
+      flex: 1;
+      min-width: 90px;
+      padding: 12px 16px;
+      border: none;
+      border-radius: 12px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.1s, opacity 0.2s;
+    }
+    button:active { transform: scale(0.97); }
+    button:disabled { opacity: 0.4; cursor: not-allowed; }
+    .btn-speak {
+      background: linear-gradient(90deg, #0ea5e9, #6366f1);
+      color: white;
+    }
+    .btn-pause { background: #334155; color: var(--text); }
+    .btn-resume { background: #334155; color: var(--text); }
+    .btn-stop { background: #7f1d1d; color: #fecaca; }
+    .status {
+      margin-top: 16px;
+      font-size: 0.85rem;
+      color: var(--muted);
+      min-height: 1.2em;
+    }
+    .hint {
+      margin-top: 18px;
+      font-size: 0.75rem;
+      color: #64748b;
+      line-height: 1.5;
+    }
+    @media (max-width: 500px) {
+      .row { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <h1>NER Text to Speech</h1>
+    <p class="subtitle">Ubah teks menjadi suara langsung di browser. Tidak perlu instal apa pun.</p>
+
+    <label for="text">Teks</label>
+    <textarea id="text" placeholder="Ketik atau tempel teks di sini... Contoh: Selamat datang di aplikasi text to speech.">Halo! Ini adalah aplikasi text to speech. Kamu bisa mengubah teks apa saja menjadi suara.</textarea>
+
+    <div class="row">
+      <div>
+        <label for="voice">Suara</label>
+        <select id="voice"></select>
+      </div>
+      <div>
+        <label for="lang">Bahasa (hint)</label>
+        <select id="lang">
+          <option value="id-ID" selected>Indonesia (id-ID)</option>
+          <option value="en-US">English (en-US)</option>
+          <option value="en-GB">English (en-GB)</option>
+          <option value="ms-MY">Melayu (ms-MY)</option>
+          <option value="">Otomatis / default</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="slider-wrap">
+      <div class="slider-header">
+        <label>Kecepatan</label>
+        <span class="val" id="rateVal">1.0x</span>
+      </div>
+      <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1" />
+    </div>
+
+    <div class="slider-wrap">
+      <div class="slider-header">
+        <label>Nada (pitch)</label>
+        <span class="val" id="pitchVal">1.0</span>
+      </div>
+      <input type="range" id="pitch" min="0.5" max="2" step="0.1" value="1" />
+    </div>
+
+    <div class="buttons">
+      <button class="btn-speak" id="speakBtn">▶ Bicara</button>
+      <button class="btn-pause" id="pauseBtn" disabled>⏸ Jeda</button>
+      <button class="btn-resume" id="resumeBtn" disabled>⏵ Lanjut</button>
+      <button class="btn-stop" id="stopBtn" disabled>■ Stop</button>
+    </div>
+
+    <p class="status" id="status">Siap. Pilih suara lalu tekan Bicara.</p>
+    <p class="hint">
+      Tip: Daftar suara tergantung sistem operasi dan browser (paling lengkap di Chrome / Edge).
+      Teks sangat panjang kadang terpotong di Chrome jika memakai suara Google — pilih suara lokal jika tersedia.
+    </p>
+  </div>
+
+  <script>
+    const synth = window.speechSynthesis;
+    const textEl = document.getElementById('text');
+    const voiceEl = document.getElementById('voice');
+    const langEl = document.getElementById('lang');
+    const rateEl = document.getElementById('rate');
+    const pitchEl = document.getElementById('pitch');
+    const rateVal = document.getElementById('rateVal');
+    const pitchVal = document.getElementById('pitchVal');
+    const statusEl = document.getElementById('status');
+    const speakBtn = document.getElementById('speakBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const resumeBtn = document.getElementById('resumeBtn');
+    const stopBtn = document.getElementById('stopBtn');
+
+    let voices = [];
+    let current = null;
+
+    function setStatus(msg) { statusEl.textContent = msg; }
+
+    function populateVoices() {
+      voices = synth.getVoices();
+      voiceEl.innerHTML = '';
+      if (!voices.length) {
+        const opt = document.createElement('option');
+        opt.textContent = 'Memuat daftar suara...';
+        voiceEl.appendChild(opt);
+        return;
+      }
+      const sorted = [...voices].sort((a, b) => {
+        const aId = (a.lang || '').toLowerCase().startsWith('id') ? 0 : 1;
+        const bId = (b.lang || '').toLowerCase().startsWith('id') ? 0 : 1;
+        if (aId !== bId) return aId - bId;
+        return a.name.localeCompare(b.name);
+      });
+      sorted.forEach((v) => {
+        const opt = document.createElement('option');
+        opt.value = v.name;
+        opt.textContent = `${v.name} (${v.lang || 'n/a'}`) ;
+        voiceEl.appendChild(opt);
+      });
+    }
+
+    populateVoices();
+    if (speechSynthesis.onvoiceschanged !== undefined) {
+      speechSynthesis.onvoiceschanged = populateVoices;
+    }
+
+    rateEl.addEventListener('input', () => {
+      rateVal.textContent = Number(rateEl.value).toFixed(1) + 'x';
+    });
+    pitchEl.addEventListener('input', () => {
+      pitchVal.textContent = Number(pitchEl.value).toFixed(1);
+    });
+
+    function updateButtons(state) {
+      speakBtn.disabled = state === 'speaking';
+      pauseBtn.disabled = state !== 'speaking';
+      resumeBtn.disabled = state !== 'paused';
+      stopBtn.disabled = state === 'idle';
+    }
+
+    speakBtn.addEventListener('click', () => {
+      const text = textEl.value.trim();
+      if (!text) {
+        setStatus('Masukkan teks dulu.');
+        return;
+      }
+      if (!('speechSynthesis' in window)) {
+        setStatus('Browser ini tidak mendukung Web Speech API.');
+        return;
+      }
+      synth.cancel();
+      const u = new SpeechSynthesisUtterance(text);
+      const selectedName = voiceEl.value;
+      const match = voices.find(v => v.name === selectedName);
+      if (match) u.voice = match;
+      if (langEl.value) u.lang = langEl.value;
+      u.rate = Number(rateEl.value);
+      u.pitch = Number(pitchEl.value);
+      u.onstart = () => {
+        current = u;
+        setStatus('Sedang berbicara...');
+        updateButtons('speaking');
+      };
+      u.onend = () => {
+        current = null;
+        setStatus('Selesai.');
+        updateButtons('idle');
+      };
+      u.onerror = (e) => {
+        current = null;
+        setStatus('Error: ' + (e.error || 'gagal memutar'));
+        updateButtons('idle');
+      };
+      u.onpause = () => updateButtons('paused');
+      u.onresume = () => {
+        setStatus('Melanjutkan...');
+        updateButtons('speaking');
+      };
+      synth.speak(u);
+    });
+
+    pauseBtn.addEventListener('click', () => {
+      if (synth.speaking && !synth.paused) {
+        synth.pause();
+        setStatus('Dijeda.');
+        updateButtons('paused');
+      }
+    });
+
+    resumeBtn.addEventListener('click', () => {
+      if (synth.paused) {
+        synth.resume();
+      }
+    });
+
+    stopBtn.addEventListener('click', () => {
+      synth.cancel();
+      current = null;
+      setStatus('Dihentikan.');
+      updateButtons('idle');
+    });
+
+    updateButtons('idle');
+  </script>
+</body>
+</html>
