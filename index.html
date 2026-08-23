@@ -77,9 +77,7 @@
       gap: 16px;
       margin-top: 16px;
     }
-    select, input[type="range"] {
-      width: 100%;
-    }
+    select, input[type="range"] { width: 100%; }
     select {
       background: #0f172a;
       border: 1px solid #334155;
@@ -129,38 +127,21 @@
     }
     button:active { transform: scale(0.97); }
     button:disabled { opacity: 0.4; cursor: not-allowed; }
-    .btn-speak {
-      background: linear-gradient(90deg, #0ea5e9, #6366f1);
-      color: white;
-    }
+    .btn-speak { background: linear-gradient(90deg, #0ea5e9, #6366f1); color: white; }
     .btn-pause { background: #334155; color: var(--text); }
     .btn-resume { background: #334155; color: var(--text); }
     .btn-stop { background: #7f1d1d; color: #fecaca; }
-    .status {
-      margin-top: 16px;
-      font-size: 0.85rem;
-      color: var(--muted);
-      min-height: 1.2em;
-    }
-    .hint {
-      margin-top: 18px;
-      font-size: 0.75rem;
-      color: #64748b;
-      line-height: 1.5;
-    }
-    @media (max-width: 500px) {
-      .row { grid-template-columns: 1fr; }
-    }
+    .status { margin-top: 16px; font-size: 0.85rem; color: var(--muted); min-height: 1.2em; }
+    .hint { margin-top: 18px; font-size: 0.75rem; color: #64748b; line-height: 1.5; }
+    @media (max-width: 500px) { .row { grid-template-columns: 1fr; } }
   </style>
 </head>
 <body>
   <div class="app">
     <h1>NER Text to Speech</h1>
     <p class="subtitle">Ubah teks menjadi suara langsung di browser. Tidak perlu instal apa pun.</p>
-
     <label for="text">Teks</label>
-    <textarea id="text" placeholder="Ketik atau tempel teks di sini... Contoh: Selamat datang di aplikasi text to speech.">Halo! Ini adalah aplikasi text to speech. Kamu bisa mengubah teks apa saja menjadi suara.</textarea>
-
+    <textarea id="text" placeholder="Ketik atau tempel teks di sini...">Halo! Ini adalah aplikasi text to speech. Kamu bisa mengubah teks apa saja menjadi suara.</textarea>
     <div class="row">
       <div>
         <label for="voice">Suara</label>
@@ -177,37 +158,23 @@
         </select>
       </div>
     </div>
-
     <div class="slider-wrap">
-      <div class="slider-header">
-        <label>Kecepatan</label>
-        <span class="val" id="rateVal">1.0x</span>
-      </div>
+      <div class="slider-header"><label>Kecepatan</label><span class="val" id="rateVal">1.0x</span></div>
       <input type="range" id="rate" min="0.5" max="2" step="0.1" value="1" />
     </div>
-
     <div class="slider-wrap">
-      <div class="slider-header">
-        <label>Nada (pitch)</label>
-        <span class="val" id="pitchVal">1.0</span>
-      </div>
+      <div class="slider-header"><label>Nada (pitch)</label><span class="val" id="pitchVal">1.0</span></div>
       <input type="range" id="pitch" min="0.5" max="2" step="0.1" value="1" />
     </div>
-
     <div class="buttons">
-      <button class="btn-speak" id="speakBtn">▶ Bicara</button>
-      <button class="btn-pause" id="pauseBtn" disabled>⏸ Jeda</button>
-      <button class="btn-resume" id="resumeBtn" disabled>⏵ Lanjut</button>
-      <button class="btn-stop" id="stopBtn" disabled>■ Stop</button>
+      <button class="btn-speak" id="speakBtn">Bicara</button>
+      <button class="btn-pause" id="pauseBtn" disabled>Jeda</button>
+      <button class="btn-resume" id="resumeBtn" disabled>Lanjut</button>
+      <button class="btn-stop" id="stopBtn" disabled>Stop</button>
     </div>
-
     <p class="status" id="status">Siap. Pilih suara lalu tekan Bicara.</p>
-    <p class="hint">
-      Tip: Daftar suara tergantung sistem operasi dan browser (paling lengkap di Chrome / Edge).
-      Teks sangat panjang kadang terpotong di Chrome jika memakai suara Google — pilih suara lokal jika tersedia.
-    </p>
+    <p class="hint">Tip: Daftar suara tergantung sistem operasi dan browser (paling lengkap di Chrome / Edge). Teks sangat panjang kadang terpotong di Chrome jika memakai suara Google.</p>
   </div>
-
   <script>
     const synth = window.speechSynthesis;
     const textEl = document.getElementById('text');
@@ -222,12 +189,8 @@
     const pauseBtn = document.getElementById('pauseBtn');
     const resumeBtn = document.getElementById('resumeBtn');
     const stopBtn = document.getElementById('stopBtn');
-
     let voices = [];
-    let current = null;
-
     function setStatus(msg) { statusEl.textContent = msg; }
-
     function populateVoices() {
       voices = synth.getVoices();
       voiceEl.innerHTML = '';
@@ -237,101 +200,71 @@
         voiceEl.appendChild(opt);
         return;
       }
-      const sorted = [...voices].sort((a, b) => {
-        const aId = (a.lang || '').toLowerCase().startsWith('id') ? 0 : 1;
-        const bId = (b.lang || '').toLowerCase().startsWith('id') ? 0 : 1;
+      const sorted = voices.slice().sort(function(a, b) {
+        const aId = (a.lang || '').toLowerCase().indexOf('id') === 0 ? 0 : 1;
+        const bId = (b.lang || '').toLowerCase().indexOf('id') === 0 ? 0 : 1;
         if (aId !== bId) return aId - bId;
         return a.name.localeCompare(b.name);
       });
-      sorted.forEach((v) => {
+      sorted.forEach(function(v) {
         const opt = document.createElement('option');
         opt.value = v.name;
-        opt.textContent = `${v.name} (${v.lang || 'n/a'}`) ;
+        opt.textContent = v.name + ' (' + (v.lang || 'n/a') + ')';
         voiceEl.appendChild(opt);
       });
     }
-
     populateVoices();
     if (speechSynthesis.onvoiceschanged !== undefined) {
       speechSynthesis.onvoiceschanged = populateVoices;
     }
-
-    rateEl.addEventListener('input', () => {
+    rateEl.addEventListener('input', function() {
       rateVal.textContent = Number(rateEl.value).toFixed(1) + 'x';
     });
-    pitchEl.addEventListener('input', () => {
+    pitchEl.addEventListener('input', function() {
       pitchVal.textContent = Number(pitchEl.value).toFixed(1);
     });
-
     function updateButtons(state) {
       speakBtn.disabled = state === 'speaking';
       pauseBtn.disabled = state !== 'speaking';
       resumeBtn.disabled = state !== 'paused';
       stopBtn.disabled = state === 'idle';
     }
-
-    speakBtn.addEventListener('click', () => {
+    speakBtn.addEventListener('click', function() {
       const text = textEl.value.trim();
-      if (!text) {
-        setStatus('Masukkan teks dulu.');
-        return;
-      }
+      if (!text) { setStatus('Masukkan teks dulu.'); return; }
       if (!('speechSynthesis' in window)) {
         setStatus('Browser ini tidak mendukung Web Speech API.');
         return;
       }
       synth.cancel();
       const u = new SpeechSynthesisUtterance(text);
-      const selectedName = voiceEl.value;
-      const match = voices.find(v => v.name === selectedName);
+      const match = voices.find(function(v) { return v.name === voiceEl.value; });
       if (match) u.voice = match;
       if (langEl.value) u.lang = langEl.value;
       u.rate = Number(rateEl.value);
       u.pitch = Number(pitchEl.value);
-      u.onstart = () => {
-        current = u;
-        setStatus('Sedang berbicara...');
-        updateButtons('speaking');
-      };
-      u.onend = () => {
-        current = null;
-        setStatus('Selesai.');
-        updateButtons('idle');
-      };
-      u.onerror = (e) => {
-        current = null;
-        setStatus('Error: ' + (e.error || 'gagal memutar'));
-        updateButtons('idle');
-      };
-      u.onpause = () => updateButtons('paused');
-      u.onresume = () => {
-        setStatus('Melanjutkan...');
-        updateButtons('speaking');
-      };
+      u.onstart = function() { setStatus('Sedang berbicara...'); updateButtons('speaking'); };
+      u.onend = function() { setStatus('Selesai.'); updateButtons('idle'); };
+      u.onerror = function(e) { setStatus('Error: ' + (e.error || 'gagal memutar')); updateButtons('idle'); };
+      u.onpause = function() { updateButtons('paused'); };
+      u.onresume = function() { setStatus('Melanjutkan...'); updateButtons('speaking'); };
       synth.speak(u);
     });
-
-    pauseBtn.addEventListener('click', () => {
+    pauseBtn.addEventListener('click', function() {
       if (synth.speaking && !synth.paused) {
         synth.pause();
         setStatus('Dijeda.');
         updateButtons('paused');
       }
     });
-
-    resumeBtn.addEventListener('click', () => {
-      if (synth.paused) {
-        synth.resume();
-      }
+    resumeBtn.addEventListener('click', function() {
+      if (synth.paused) synth.resume();
     });
-
-    stopBtn.addEventListener('click', () => {
+    stopBtn.addEventListener('click', function() {
       synth.cancel();
-      current = null;
       setStatus('Dihentikan.');
       updateButtons('idle');
     });
-
     updateButtons('idle');
   </script>
 </body>
