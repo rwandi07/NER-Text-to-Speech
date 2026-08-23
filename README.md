@@ -1,41 +1,31 @@
 # NER Text to Speech
 
-Aplikasi text-to-speech berbasis **Web Speech API**. Buka `index.html` di browser — tidak perlu instal, server, atau API key.
+Aplikasi text-to-speech berbasis **Web Speech API**, plus tombol **Simpan MP3**.
 
 ## Cara pakai
 
 1. Unduh `index.html` dari [Release terbaru](https://github.com/rwandi07/NER-Text-to-Speech/releases).
 2. Buka file itu di Chrome, Edge, atau Firefox.
-3. Ketik teks, pilih suara, atur kecepatan/nada, lalu tekan **Bicara**.
-
-Atau clone repo ini:
+3. Ketik teks, lalu:
+   - **Bicara** — putar suara dari browser (offline, suara perangkat)
+   - **Simpan MP3** — unduh file MP3 (perlu internet)
 
 ```bash
 git clone https://github.com/rwandi07/NER-Text-to-Speech.git
 cd NER-Text-to-Speech
 ```
 
-Lalu buka `index.html` di browser.
-
 ## Fitur
 
-- Input teks bebas
-- Pilih suara yang terpasang di perangkat
-- Preferensi bahasa Indonesia (`id-ID`)
+- Bicara / jeda / lanjut / stop
+- Pilih suara browser dan bahasa
 - Atur kecepatan dan pitch
-- Bicara, jeda, lanjut, dan stop
+- **Simpan hasil sebagai MP3** + preview audio
+- Teks panjang dipotong otomatis lalu digabung jadi satu file
 
-## Batas teks
+## Catatan MP3
 
-| Sumber | Batas |
-| --- | --- |
-| Spesifikasi Web Speech API | Maksimal **32.767 karakter** per ucapan |
-| Chrome + suara Google (praktik) | Sering terpotong sekitar **200–300 karakter** atau ~15 detik |
-| Suara lokal sistem (Windows/macOS) | Biasanya jauh lebih longgar |
-
-## Browser
-
-Paling lengkap di **Chrome** dan **Edge**. Daftar suara mengikuti sistem operasi.
+Simpan MP3 memakai layanan TTS daring. Suara MP3 bukan suara yang sama dengan daftar "Suara browser".
 
 ## Lisensi
 
