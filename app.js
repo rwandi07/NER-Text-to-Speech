@@ -24,6 +24,8 @@ const MP3_API = 'https://tts-api.netlify.app/';
 const CHUNK = 180;
 const LS_KEY = 'ner_tts_gemini_key';
 const LS_ON = 'ner_tts_ai_on';
+const MALE_GEMINI = 'Puck';
+const FEMALE_GEMINI = 'Kore';
 let voices = [];
 function setStatus(msg) { statusEl.textContent = msg; }
 apiKeyEl.value = localStorage.getItem(LS_KEY) || '';
@@ -32,6 +34,7 @@ aiToggle.addEventListener('change', function () { aiBox.classList.toggle('on', a
 apiKeyEl.addEventListener('change', function () { localStorage.setItem(LS_KEY, apiKeyEl.value.trim()); });
 function populateVoices() {
   voices = synth.getVoices();
+  var prev = voiceEl.value;
   voiceEl.innerHTML = '';
   if (!voices.length) { const opt = document.createElement('option'); opt.textContent = 'Memuat daftar suara...'; voiceEl.appendChild(opt); return; }
   const sorted = voices.slice().sort(function (a, b) {
@@ -46,6 +49,7 @@ function populateVoices() {
     opt.textContent = v.name + ' (' + (v.lang || 'n/a') + ')';
     voiceEl.appendChild(opt);
   });
+  if (prev) voiceEl.value = prev;
 }
 populateVoices();
 if (speechSynthesis.onvoiceschanged !== undefined) speechSynthesis.onvoiceschanged = populateVoices;
@@ -79,6 +83,33 @@ pauseBtn.addEventListener('click', function () { if (synth.speaking && !synth.pa
 resumeBtn.addEventListener('click', function () { if (synth.paused) synth.resume(); });
 stopBtn.addEventListener('click', function () { synth.cancel(); setStatus('Dihentikan.'); updateButtons('idle'); });
 updateButtons('idle');
+function selectedBrowserVoice() {
+  return voices.find(function (v) { return v.name === voiceEl.value; }) || null;
+}
+function inferGender(voice) {
+  var raw = ((voice && voice.name) || voiceEl.value || '') + ' ' + ((voice && voice.lang) || '');
+  var n = raw.toLowerCase();
+  if (/female|woman|wanita|gadis|girl|zira|susan|jenny|aria|samantha|victoria|moira|tessa|karen|fiona|siri|linda|helena|sonia|nathalie|hortense|zephyr|kore|aoede|leda|sulafat/.test(n)) return 'female';
+  if (/male|pria|man\b|ardi|andika|david|mark|guy|ryan|andrew|brian|thomas|george|ravi|james|daniel|puck|charon|fenrir|orus/.test(n)) return 'male';
+  if (/google/.test(n) && /indonesia|id-id/.test(n)) return 'female';
+  return 'unknown';
+}
+function resolveGeminiVoice() {
+  var chosen = aiVoiceEl.value || 'auto';
+  if (chosen !== 'auto') return { name: chosen, gender: inferGender({ name: chosen }), source: 'manual' };
+  var gender = inferGender(selectedBrowserVoice());
+  if (gender === 'male') return { name: MALE_GEMINI, gender: 'male', source: 'browser' };
+  if (gender === 'female') return { name: FEMALE_GEMINI, gender: 'female', source: 'browser' };
+  return { name: MALE_GEMINI, gender: 'male', source: 'default-male' };
+}
+function langNameFromSetting() {
+  var lv = langEl.value || 'id-ID';
+  if (lv.indexOf('en-GB') === 0) return 'British English';
+  if (lv.indexOf('en') === 0) return 'American English';
+  if (lv.indexOf('ms') === 0) return 'Malay';
+  if (lv.indexOf('jv') === 0) return 'Javanese';
+  return 'Indonesian';
+}
 function mp3Lang() {
   const v = langEl.value || 'id-ID';
   if (v.indexOf('id') === 0) return 'id';
@@ -142,13 +173,7 @@ mp3Btn.addEventListener('click', async function () {
     setStatus('Gagal MP3. Cek internet. ' + (err && err.message ? err.message : ''));
   } finally { mp3Btn.disabled = false; }
 });
-function stylePrompt(text) {
-  var langName = 'Indonesian';
-  var lv = langEl.value || 'id-ID';
-  if (lv.indexOf('en-GB') === 0) langName = 'British English';
-  else if (lv.indexOf('en') === 0) langName = 'American English';
-  else if (lv.indexOf('ms') === 0) langName = 'Malay';
-  else if (lv.indexOf('jv') === 0) langName = 'Javanese';
+function stylePrompt(text, mapped) {
   var styles = {
     natural: 'Speak naturally, like a warm human narrator. Use realistic intonation, gentle pauses, and conversational rhythm. Do not sound robotic.',
     cheerful: 'Speak cheerfully and brightly, with a friendly smile in the voice.',
@@ -158,7 +183,29 @@ function stylePrompt(text) {
     whisper: 'Speak in a soft intimate whisper, still clear enough to understand.'
   };
   var style = styles[aiStyleEl.value] || styles.natural;
-  return 'TTS the transcript only. Do not add extra words or announce the instructions.\nLanguage: ' + langName + '.\nDirection: ' + style + '\n\nTranscript:\n' + text;
+  var rate = Number(rateEl.value);
+  var pitch = Number(pitchEl.value);
+  var speedNote = 'Speak at a normal conversational pace.';
+  if (rate <= 0.7) speedNote = 'Speak slowly and clearly, about half normal speed.';
+  else if (rate < 0.95) speedNote = 'Speak a bit slower than normal.';
+  else if (rate > 1.4) speedNote = 'Speak quickly, about one and a half times normal speed.';
+  else if (rate > 1.05) speedNote = 'Speak a bit faster than normal.';
+  var pitchNote = 'Use a natural mid pitch.';
+  if (pitch <= 0.7) pitchNote = 'Use a noticeably lower pitch.';
+  else if (pitch < 0.95) pitchNote = 'Use a slightly lower pitch.';
+  else if (pitch > 1.4) pitchNote = 'Use a noticeably higher pitch.';
+  else if (pitch > 1.05) pitchNote = 'Use a slightly higher pitch.';
+  var genderNote = mapped.gender === 'female'
+    ? 'Use an adult female speaking voice.'
+    : 'Use an adult male speaking voice.';
+  var browserName = voiceEl.value || 'browser voice';
+  return 'TTS the transcript only. Do not add extra words or announce the instructions.\n' +
+    'Language: ' + langNameFromSetting() + '.\n' +
+    'Voice match: follow the selected browser voice named "' + browserName + '". ' + genderNote + '\n' +
+    'Pace: ' + speedNote + '\n' +
+    'Pitch: ' + pitchNote + '\n' +
+    'Direction: ' + style + '\n\n' +
+    'Transcript:\n' + text;
 }
 function b64ToBytes(b64) {
   var bin = atob(b64);
@@ -209,21 +256,22 @@ aiBtn.addEventListener('click', async function () {
   if (!text) { setStatus('Masukkan teks dulu.'); return; }
   if (!key) { aiToggle.checked = true; aiBox.classList.add('on'); setStatus('Isi Gemini API key dulu, lalu Generate AI lagi.'); apiKeyEl.focus(); return; }
   localStorage.setItem(LS_KEY, key);
+  var mapped = resolveGeminiVoice();
   aiBtn.disabled = true; mp3Btn.disabled = true;
   var models = [aiModelEl.value];
   if (models[0] !== 'gemini-2.5-flash-preview-tts') models.push('gemini-2.5-flash-preview-tts');
   try {
     var chunks = splitChunks(text, 2200);
     var wavParts = [];
-    var rate = 24000, lastErr;
+    var sampleRate = 24000, lastErr;
     for (var c = 0; c < chunks.length; c++) {
-      setStatus('Gemini AI bagian ' + (c + 1) + ' / ' + chunks.length + '...');
-      var prompt = stylePrompt(chunks[c]);
+      setStatus('Gemini AI bagian ' + (c + 1) + ' / ' + chunks.length + ' memakai ' + mapped.name + '...');
+      var prompt = stylePrompt(chunks[c], mapped);
       var ok = false;
       for (var m = 0; m < models.length; m++) {
         try {
-          var audio = await geminiSpeak(models[m], key, prompt, aiVoiceEl.value);
-          rate = parseSampleRate(audio.mime);
+          var audio = await geminiSpeak(models[m], key, prompt, mapped.name);
+          sampleRate = parseSampleRate(audio.mime);
           wavParts.push(audio.bytes);
           ok = true; break;
         } catch (e) { lastErr = e; }
@@ -231,11 +279,12 @@ aiBtn.addEventListener('click', async function () {
       if (!ok) throw lastErr || new Error('Semua model gagal.');
     }
     var pcm = concatBytes(wavParts);
-    var wav = pcmToWav(pcm, rate);
+    var wav = pcmToWav(pcm, sampleRate);
     var blob = new Blob([wav], { type: 'audio/wav' });
     var name = stamp('.wav');
     playAndDownload(blob, name);
-    setStatus('AI selesai. File: ' + name + ' (' + Math.round(blob.size / 1024) + ' KB).');
+    var genderLabel = mapped.gender === 'female' ? 'wanita' : 'pria';
+    setStatus('AI selesai (' + mapped.name + ', ' + genderLabel + ', mengikuti ' + (voiceEl.value || 'browser') + '). File: ' + name + '.');
   } catch (err) {
     setStatus('Gagal Gemini AI: ' + (err && err.message ? err.message : 'unknown'));
   } finally { aiBtn.disabled = false; mp3Btn.disabled = false; }

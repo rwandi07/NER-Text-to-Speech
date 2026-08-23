@@ -12,14 +12,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Create v1.2.1 if missing
+      - name: Create v1.2.2 if missing
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          if gh release view v1.2.1 >/dev/null 2>&1; then
+          if gh release view v1.2.2 >/dev/null 2>&1; then
             echo exists
           else
-            gh release create v1.2.1 index.html app.js \
-              --title "NER Text to Speech v1.2.1" \
-              --notes "Mode AI Gemini lengkap. Unduh index.html dan app.js ke folder yang sama, buka index.html, aktifkan Mode AI, tempel API key, lalu Generate AI (WAV)."
+            gh release create v1.2.2 index.html app.js \
+              --title "NER Text to Speech v1.2.2" \
+              --notes "WAV Gemini mengikuti setting browser: gender, bahasa, kecepatan, dan pitch. Pilih Suara Gemini = Ikuti suara browser."
           fi

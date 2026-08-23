@@ -46,7 +46,7 @@
 <body>
   <div class="app">
     <h1>NER Text to Speech</h1>
-    <p class="subtitle">Bicara di browser, unduh MP3, atau pakai Gemini AI agar suaranya lebih manusiawi.</p>
+    <p class="subtitle">Bicara di browser, unduh MP3, atau pakai Gemini AI. WAV bisa mengikuti setting suara browser.</p>
     <label for="text">Teks</label>
     <textarea id="text">Halo! Ini adalah aplikasi NER Text to Speech. Dengan mode AI Gemini, suara yang dihasilkan terdengar lebih natural.</textarea>
     <div class="row">
@@ -62,8 +62,8 @@
         </select>
       </div>
     </div>
-    <div class="slider-wrap"><div class="slider-header"><label>Kecepatan (browser dan MP3)</label><span class="val" id="rateVal">1.0x</span></div><input type="range" id="rate" min="0.5" max="2" step="0.1" value="1" /></div>
-    <div class="slider-wrap"><div class="slider-header"><label>Nada / pitch (browser)</label><span class="val" id="pitchVal">1.0</span></div><input type="range" id="pitch" min="0.5" max="2" step="0.1" value="1" /></div>
+    <div class="slider-wrap"><div class="slider-header"><label>Kecepatan</label><span class="val" id="rateVal">1.0x</span></div><input type="range" id="rate" min="0.5" max="2" step="0.1" value="1" /></div>
+    <div class="slider-wrap"><div class="slider-header"><label>Nada / pitch</label><span class="val" id="pitchVal">1.0</span></div><input type="range" id="pitch" min="0.5" max="2" step="0.1" value="1" /></div>
     <div class="ai-box" id="aiBox">
       <div class="ai-head"><strong>Mode AI Gemini</strong><label class="toggle"><input type="checkbox" id="aiToggle" /> Aktifkan</label></div>
       <div class="ai-fields">
@@ -81,16 +81,17 @@
           <div>
             <label for="aiVoice">Suara Gemini</label>
             <select id="aiVoice">
-              <option value="Kore">Kore - tegas</option>
-              <option value="Puck">Puck - ceria</option>
-              <option value="Zephyr">Zephyr - cerah</option>
-              <option value="Sulafat">Sulafat - hangat</option>
-              <option value="Aoede">Aoede - ringan</option>
-              <option value="Leda">Leda - muda</option>
-              <option value="Charon">Charon - informatif</option>
-              <option value="Fenrir">Fenrir - ekspresif</option>
-              <option value="Achernar">Achernar - lembut</option>
-              <option value="Achird">Achird - ramah</option>
+              <option value="auto" selected>Ikuti suara browser</option>
+              <option value="Puck">Puck - pria, ceria</option>
+              <option value="Charon">Charon - pria, informatif</option>
+              <option value="Fenrir">Fenrir - pria, ekspresif</option>
+              <option value="Orus">Orus - pria, tegas</option>
+              <option value="Kore">Kore - wanita, tegas</option>
+              <option value="Zephyr">Zephyr - wanita, cerah</option>
+              <option value="Sulafat">Sulafat - wanita, hangat</option>
+              <option value="Aoede">Aoede - wanita, ringan</option>
+              <option value="Leda">Leda - wanita, muda</option>
+              <option value="Achernar">Achernar - wanita, lembut</option>
             </select>
           </div>
           <div>
@@ -105,7 +106,7 @@
             </select>
           </div>
         </div>
-        <p class="warn">API key hanya tersimpan di browser ini. Buat key di <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a>. Hasil AI berupa WAV.</p>
+        <p class="warn">Default WAV mengikuti gender, bahasa, kecepatan, dan pitch dari setting browser. Suara Gemini tidak bisa identik 100% dengan suara Windows/Chrome, tapi jenis suaranya diselaraskan. Buat key di <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Google AI Studio</a>.</p>
       </div>
     </div>
     <div class="buttons">
@@ -120,7 +121,7 @@
     </div>
     <audio id="preview" controls></audio>
     <p class="status" id="status">Siap.</p>
-    <p class="hint">Bicara = suara perangkat. MP3 = TTS daring sederhana. AI Gemini = suara neural lebih manusiawi, butuh API key dan internet. Simpan index.html dan app.js di folder yang sama.</p>
+    <p class="hint">Unduh index.html dan app.js ke folder yang sama. Versi v1.2.2: WAV mengikuti setting browser.</p>
   </div>
   <script src="app.js"></script>
 </body>
